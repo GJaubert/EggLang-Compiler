@@ -1,0 +1,9 @@
+do(
+   :=(x, 4),
+   :=(setx, ->(val, 
+     =(x, val)
+     ) # end fun
+   ),  # end define setx
+   setx(50),
+   print(x)
+)

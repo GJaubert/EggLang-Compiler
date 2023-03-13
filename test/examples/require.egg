@@ -1,0 +1,4 @@
+do(
+  def(str, require("examples/one.egg")),
+  print(str)
+)

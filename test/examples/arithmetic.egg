@@ -1,0 +1,5 @@
+do(
+  define(a, 4),
+  define(b,+(a,*(4,5))),
+  print(b)
+)

@@ -1,0 +1,4 @@
+do{
+  define{x, arr{3, 4, 5}},
+  print{x}
+}

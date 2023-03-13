@@ -1,0 +1,7 @@
+/* comentario
+multilinea
+*/
+do(
+  define(x, 10),
+  print(x)
+)

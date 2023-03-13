@@ -1,0 +1,52 @@
+{
+  "name": "@ull-esit-pl-2021/egg-alu0101240374",
+  "version": "1.6.1",
+  "description": "Module for egg language",
+  "main": "index.js",
+  "bin": {
+    "egg": "bin/egg.js",
+    "eggc": "bin/eggc.js",
+    "evm": "bin/evm.js"
+  },
+  "directories": {
+    "example": "examples",
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ULL-ESIT-PL-2021/egg-alu0101240374.git"
+  },
+  "scripts": {
+    "test": "mocha",
+    "production:test": "cd ../egg-test-alu0101240374 && npm run clean_test",
+    "doc": "jsdoc ./lib/** -d ./docs",
+    "coverage": "npx c8 mocha"
+  },
+  "keywords": [
+    "PL",
+    "ULL",
+    "EGG"
+  ],
+  "author": "Gabriel García Jaubert <alu0101240374@ull.edu.es>",
+  "bugs": {
+    "url": "https://github.com/ULL-ESIT-PL-2021/egg-alu0101240374/issues"
+  },
+  "homepage": "https://github.com/ULL-ESIT-PL-2021/egg-alu0101240374#readme",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/ULL-ESIT-PL-2021/egg-super/egg-alu0101240374/blob/master/LICENSE.txt"
+    }
+  ],
+  "devDependencies": {
+    "@ull-esit-pl/example2test": "latest",
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2"
+  },
+  "dependencies": {
+    "c8": "^7.7.2",
+    "commander": "^7.2.0",
+    "jsdoc": "^3.6.6",
+    "xregexp": "^5.0.2"
+  }
+}

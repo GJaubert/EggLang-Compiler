@@ -1,0 +1,1 @@
+do(define(x,4),print(x))
