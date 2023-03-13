@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: eggvm.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: eggvm.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>let insp = require("util").inspect;
+let ins = (x) => insp(x, {depth: null});
+const {Value, Word, Apply} = require('./ast.js');
+let fs = require("fs");
+
+let specialForms = Object.create(null); // new Map;
+
+specialForms['if'] = function(args, env) {
+  if (args.length != 3) {
+    throw new SyntaxError('Bad number of args to if');
+  }
+
+  if (args[0].evaluate(env) !== false) {
+    return args[1].evaluate(env);
+  } else {
+    console.log(Apply)
+    return args[2].evaluate(env);
+  }
+};
+
+specialForms['while'] = function(args, env) {
+  if (args.length != 2) {
+    throw new SyntaxError('Bad number of args to while');
+  }
+
+  while(args[0].evaluate(env) !== false) {
+    args[1].evaluate(env);
+  }
+  // Egg has no undefined so we return false when there's no meaningful result.
+  return false;
+};
+
+specialForms['do'] = function(args, env) {
+  let value = false;
+
+  args.forEach(function(arg) {
+    //console.log(arg)
+    value = arg.evaluate(env);
+  });
+
+  return value;
+};
+
+specialForms['def'] = specialForms['define'] = specialForms[':='] = 
+function(args, env) {
+  if (args.length != 2 || args[0].type != 'word') {
+    throw new SyntaxError('Bad use of define');
+  }
+
+  let value = args[1].evaluate(env);
+  env[args[0].name] = value;
+  return value;
+};
+
+/**
+ * do(
+ *  define(substract, fun(val1, val2,
+ *    -(val1,val2)
+ *  )),
+ * substract(4,3)
+ * )
+ */
+specialForms['->'] = specialForms['fun'] = function(args, env) {
+  if (!args.length) {
+    throw new SyntaxError('Functions need a body.')
+  }
+
+  function name(expr) {
+    if (expr.type != 'word') {
+      throw new SyntaxError('Arg names must be words');
+    }
+
+    return expr.name;
+  }
+
+  let argNames = args.slice(0, args.length - 1).map(name);
+  let body = args[args.length - 1];
+
+  return function() {
+    if (arguments.length != argNames.length) {
+      throw new TypeError('Wrong number of arguments');
+    }
+
+    let localEnv = Object.create(env);
+    for (let i = 0; i &lt; arguments.length; i++) {
+      localEnv[argNames[i]] = arguments[i];
+    }
+
+    return body.evaluate(localEnv);
+  };
+};
+
+specialForms["set"] = specialForms['='] = function(args, env) {
+  debugger;
+  if (args.length != 2 || args[0].type != 'word') {
+    throw new SyntaxError('Bad use of set');
+  }
+
+  let valName = args[0].name;
+  let value = args[1].evaluate(env);
+  for (let scope = env; scope; scope = Object.getPrototypeOf(scope)) {
+    if (Object.prototype.hasOwnProperty.call(scope, valName)) {
+      scope[valName] = value;
+      return value;
+    }
+  }
+  throw new ReferenceError(`Tried setting an undefined variable: ${valName}`);
+};
+
+
+let topEnv = Object.create(null); // new Map;
+topEnv['true'] = true;
+topEnv['false'] = false;
+
+[
+  '+', 
+  '-', 
+  '*', 
+  '/', 
+  '==', 
+  '&lt;', 
+  '>',
+  '&amp;&amp;',
+  '||'
+].forEach(op => {
+  topEnv[op] = new Function('a, b', `return a ${op} b;`);
+});
+
+topEnv['print'] = function(value) {
+  debugger;
+  console.log(value);
+  return value;
+};
+
+topEnv["arr"] = topEnv["array"] = function(...args) {
+  return args;
+};
+
+topEnv["length"] = function(array) {
+  return array.length;
+};
+
+topEnv["[]"] = topEnv["element"] = topEnv["&lt;-"] =
+function(array, n) {
+  return array[n];
+};
+
+module.exports = {specialForms};
+//console.log(specialForms);
+let parser = require('./parse.js');
+let parse = parser.parse;
+
+/**
+ * Runs a program
+ * @param {*} program 
+ * @returns  evaluated program
+ */
+function run(program) {
+  let env = Object.create(topEnv);
+  let tree = parse(program);
+  debugger;
+  // console.log(program);
+  // console.log(ins(tree));
+  return tree.evaluate(env);
+}
+
+/**
+ * Runs a program from a given file
+ * @param {*} fileName 
+ * @returns evaluated program
+ */
+function runFromFile(fileName) {
+  try {
+    let program = fs.readFileSync(fileName, 'utf8');
+    return run(program);
+  }
+  catch (err) {
+    console.log(err);
+  }
+}
+
+/**
+ * Runs a program from a compiled tree
+ * @param {*} fileName 
+ * @return evaluation of tree 
+ */
+function runFromEVM(fileName) {
+  try {
+    let json = fs.readFileSync(fileName, 'utf8');
+    let tree = JSON.parse(json);
+    debugger;
+    let env = Object.create(topEnv);
+    // console.log(program);
+    // console.log(ins(tree));
+    return tree.evaluate(env);
+  }
+  catch (err) {
+    console.log(err);
+  }
+}
+
+module.exports = {
+  run,
+  runFromFile,
+  runFromEVM,
+  topEnv,
+  specialForms,
+  parser,
+  // evaluate,
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#getProgram">getProgram</a></li><li><a href="global.html#getTokenName">getTokenName</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#parseApply">parseApply</a></li><li><a href="global.html#parseExpression">parseExpression</a></li><li><a href="global.html#parseFromFile">parseFromFile</a></li><li><a href="global.html#regExpUnify">regExpUnify</a></li><li><a href="global.html#run">run</a></li><li><a href="global.html#runFromEVM">runFromEVM</a></li><li><a href="global.html#runFromFile">runFromFile</a></li><li><a href="global.html#setProgram">setProgram</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Mon May 24 2021 20:56:24 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
