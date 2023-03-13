@@ -1,15 +1,20 @@
 Egg
+
+> Gabriel García Jaubert  
+> Egg language compiler
+> 20/04/2021
+
   =========
 
   A small library providing utility methods for running programs in egg language
 
   ## Installation
   
-  npm install @ull-esit-pl-2021/egg-alu0101240374 --save
+  npm install @ull-esit-pl-2021/egg-alu0101240374 --save (deprecated)
 
   Globally:
 
-  npm install -g @ull-esit-pl-2021/egg-alu0101240374
+  npm install -g @ull-esit-pl-2021/egg-alu0101240374 (deprecated)
 
   ## Usage
 
