@@ -4,7 +4,6 @@ Egg
 > Egg language compiler
 > 20/04/2021
 
-  =========
 
   A small library providing utility methods for running programs in egg language
 
